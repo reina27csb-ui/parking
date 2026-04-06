@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – SmartPark{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>⚙️ Admin Dashboard</h1>
+  <p>Manage all parking lots and monitor system activity.</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Slots</div>
+    <div class="stat-value accent">{{ stats.total_slots }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Occupied</div>
+    <div class="stat-value red">{{ stats.occupied }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Available</div>
+    <div class="stat-value green">{{ stats.total_slots - stats.occupied }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Bookings</div>
+    <div class="stat-value yellow">{{ stats.bookings }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Revenue</div>
+    <div class="stat-value green">₹{{ stats.revenue }}</div>
+  </div>
+</div>
+
+<!-- Slot Management per Lot -->
+{% for lot_id, lot in lots.items() %}
+<div class="card" style="margin-bottom:1.5rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;">
+    <div>
+      <div style="font-size:1.1rem;font-weight:700;">{{ lot.name }}</div>
+      <div style="font-size:.82rem;color:var(--muted);">{{ lot.address }}</div>
+    </div>
+    <div style="display:flex;gap:.5rem;">
+      <span class="badge badge-green">{{ lot.slots.values()|select('equalto','available')|list|length }} free</span>
+      <span class="badge badge-red">{{ lot.slots.values()|select('equalto','occupied')|list|length }} occupied</span>
+    </div>
+  </div>
+
+  <div class="slot-grid">
+    {% for slot_num, status in lot.slots.items() %}
+    <div style="text-align:center;">
+      <div class="slot slot-{{ status }}" style="cursor:default;font-size:.75rem;">
+        <span style="font-size:1.2rem;">{% if status=='available' %}🟢{% elif status=='occupied' %}🔴{% else %}🟡{% endif %}</span>
+        <span>S-{{ slot_num }}</span>
+        <span style="font-size:.65rem;opacity:.7;">{{ status }}</span>
+      </div>
+      <div style="margin-top:.3rem;display:flex;gap:.25rem;justify-content:center;">
+        {% if status == 'available' %}
+          <a href="{{ url_for('admin_toggle', lot_id=lot_id, slot_num=slot_num) }}" class="btn btn-outline btn-sm" style="font-size:.65rem;padding:.2rem .5rem;">🔧 Maint</a>
+        {% elif status == 'maintenance' %}
+          <a href="{{ url_for('admin_toggle', lot_id=lot_id, slot_num=slot_num) }}" class="btn btn-success btn-sm" style="font-size:.65rem;padding:.2rem .5rem;">✅ Restore</a>
+        {% elif status == 'occupied' %}
+          <a href="{{ url_for('admin_release', lot_id=lot_id, slot_num=slot_num) }}" class="btn btn-danger btn-sm" style="font-size:.65rem;padding:.2rem .5rem;" onclick="return confirm('Force release this slot?')">↩ Release</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+
+<!-- All Bookings Table -->
+<div class="card" style="margin-top:2rem;">
+  <div style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;">📋 All Bookings</div>
+  {% if bookings %}
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr><th>ID</th><th>User</th><th>Lot</th><th>Slot</th><th>Vehicle</th><th>Hrs</th><th>Amount</th><th>Status</th><th>Booked At</th></tr>
+    </thead>
+    <tbody>
+      {% for bid, b in bookings.items() | sort(attribute='0', reverse=True) %}
+      <tr>
+        <td><code style="color:var(--accent);font-size:.8rem;">{{ b.id }}</code></td>
+        <td>{{ b.user }}</td>
+        <td style="font-size:.85rem;">{{ b.lot_name }}</td>
+        <td><code>S-{{ b.slot }}</code></td>
+        <td>{{ b.vehicle }}</td>
+        <td>{{ b.hours }}</td>
+        <td style="color:var(--green);font-weight:600;">₹{{ b.amount }}</td>
+        <td>
+          {% if b.status == 'confirmed' %}<span class="badge badge-green">Confirmed</span>
+          {% else %}<span class="badge badge-red">Cancelled</span>{% endif %}
+        </td>
+        <td style="font-size:.8rem;color:var(--muted);">{{ b.booked_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p style="color:var(--muted);text-align:center;padding:2rem;">No bookings yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

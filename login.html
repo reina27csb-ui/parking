@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Login – SmartPark{% endblock %}
+{% block content %}
+<style>
+.auth-wrap { max-width:400px; margin:3rem auto; }
+.auth-wrap h1 { font-size:1.75rem; font-weight:700; text-align:center; margin-bottom:.5rem; }
+.auth-wrap p { text-align:center; color:var(--muted); margin-bottom:1.75rem; font-size:.9rem; }
+.demo-box { background:rgba(0,212,255,.07); border:1px dashed rgba(0,212,255,.3); border-radius:8px; padding:.75rem 1rem; margin-bottom:1.25rem; font-size:.82rem; color:var(--muted); }
+.demo-box code { color:var(--accent); }
+</style>
+
+<div class="auth-wrap">
+  <h1>🅿 Welcome Back</h1>
+  <p>Sign in to manage your parking bookings</p>
+
+  <div class="demo-box">
+    <b>Demo accounts:</b><br>
+    User: <code>user1</code> / <code>pass123</code><br>
+    Admin: <code>admin</code> / <code>admin123</code>
+  </div>
+
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.75rem;">Login →</button>
+    </form>
+  </div>
+  <p style="text-align:center;margin-top:1rem;font-size:.875rem;color:var(--muted);">
+    No account? <a href="{{ url_for('register') }}" style="color:var(--accent)">Register here</a>
+  </p>
+</div>
+{% endblock %}

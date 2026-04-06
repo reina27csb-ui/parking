@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}SmartPark – Find & Book Parking{% endblock %}
+{% block content %}
+
+<style>
+.hero { text-align:center; padding: 4rem 1rem 3rem; }
+.hero h1 { font-size: clamp(2rem,5vw,3.5rem); font-weight:700; line-height:1.1; }
+.hero h1 em { color: var(--accent); font-style:normal; }
+.hero p { color:var(--muted); margin:1rem auto; max-width:500px; font-size:1.05rem; }
+.hero-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:1.5rem; }
+.map-section { margin: 2rem 0; }
+.map-section h2 { font-size:1.2rem; font-weight:700; margin-bottom:1rem; }
+#map { height:380px; border-radius: var(--radius); border:1px solid var(--border); overflow:hidden; }
+.lots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.25rem; margin-top:2rem; }
+.lot-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; transition: border-color .2s, transform .2s; text-decoration:none; color:inherit; display:block; }
+.lot-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+.lot-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:.75rem; }
+.lot-name { font-size:1rem; font-weight:700; }
+.lot-addr { font-size:.82rem; color:var(--muted); margin-top:.2rem; }
+.lot-meta { display:flex; gap:1rem; margin-top:1rem; font-size:.85rem; color:var(--muted); }
+.lot-meta span { display:flex; align-items:center; gap:4px; }
+.avail-bar-wrap { margin-top:1rem; background:var(--surface); border-radius:999px; height:6px; overflow:hidden; }
+.avail-bar { height:100%; border-radius:999px; background: var(--green); transition: width .4s; }
+</style>
+
+<div class="hero">
+  <h1>Park Smarter, <em>Not Harder</em></h1>
+  <p>Find available parking near you, book a slot instantly, and navigate with ease.</p>
+  <div class="hero-actions">
+    <a href="{{ url_for('lots') }}" class="btn btn-primary">🔍 Find Parking</a>
+    {% if not session.get('username') %}
+    <a href="{{ url_for('register') }}" class="btn btn-outline">Create Account</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="map-section">
+  <h2>📍 Parking Lots Near You</h2>
+  <div id="map"></div>
+</div>
+
+<div class="lots-grid">
+  {% for lot_id, lot in lots.items() %}
+  {% set avail = available_count(lot_id) %}
+  {% set pct = (avail / lot.total * 100)|int %}
+  <a href="{{ url_for('lot_detail', lot_id=lot_id) }}" class="lot-card">
+    <div class="lot-top">
+      <div>
+        <div class="lot-name">{{ lot.name }}</div>
+        <div class="lot-addr">📌 {{ lot.address }}</div>
+      </div>
+      <span class="badge {% if avail > lot.total//2 %}badge-green{% elif avail > 0 %}badge-yellow{% else %}badge-red{% endif %}">
+        {{ avail }}/{{ lot.total }}
+      </span>
+    </div>
+    <div class="avail-bar-wrap">
+      <div class="avail-bar" style="width:{{ pct }}%; background:{% if pct>50 %}var(--green){% elif pct>20 %}var(--yellow){% else %}var(--red){% endif %};"></div>
+    </div>
+    <div class="lot-meta">
+      <span>💰 ₹{{ lot.rate }}/hr</span>
+      <span>🅿 {{ lot.total }} slots</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Leaflet map (no API key needed) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const lots = {{ lots | tojson }};
+
+const map = L.map('map').setView([13.0, 80.2], 11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+}).addTo(map);
+
+function markerColor(avail, total) {
+  const pct = avail / total;
+  return pct > 0.5 ? '#10b981' : pct > 0 ? '#f59e0b' : '#ef4444';
+}
+
+async function loadAvail() {
+  const res = await fetch('/api/lots');
+  const data = await res.json();
+  data.forEach(lot => {
+    const color = markerColor(lot.available, lot.total);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:${color};color:#000;font-weight:700;font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)">🅿 ${lot.available}/${lot.total}</div>`,
+      iconAnchor: [30, 15]
+    });
+    L.marker([lot.lat, lot.lng], {icon})
+      .addTo(map)
+      .bindPopup(`<b>${lot.name}</b><br>${lot.address}<br>₹${lot.rate}/hr<br><a href="/lot/${lot.id}" style="color:#00d4ff">Book Now →</a>`);
+  });
+}
+loadAvail();
+</script>
+{% endblock %}

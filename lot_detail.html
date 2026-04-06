@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ lot.name }} – SmartPark{% endblock %}
+{% block content %}
+
+<style>
+.lot-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+.lot-header h1 { font-size:1.75rem; font-weight:700; }
+.lot-header p { color:var(--muted); margin-top:.25rem; }
+.lot-info { display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:2rem; }
+.info-chip { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:.6rem 1rem; font-size:.875rem; display:flex; align-items:center; gap:.4rem; }
+.section-title { font-size:1rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:1rem; }
+.legend { display:flex; gap:1.25rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--muted); }
+.legend-dot { width:12px; height:12px; border-radius:3px; }
+#lot-map { height:240px; border-radius: var(--radius); border:1px solid var(--border); margin-bottom:2rem; }
+</style>
+
+<div class="lot-header">
+  <div>
+    <a href="{{ url_for('lots') }}" style="color:var(--muted);font-size:.85rem;text-decoration:none;">← All Lots</a>
+    <h1>{{ lot.name }}</h1>
+    <p>📌 {{ lot.address }}</p>
+  </div>
+  <span class="badge {% set a=available_count(lot_id) %}{% if a > lot.total//2 %}badge-green{% elif a > 0 %}badge-yellow{% else %}badge-red{% endif %}" style="font-size:1rem;padding:.4rem 1rem;">
+    {{ available_count(lot_id) }} Available
+  </span>
+</div>
+
+<div class="lot-info">
+  <div class="info-chip">💰 ₹{{ lot.rate }} / hour</div>
+  <div class="info-chip">🅿 {{ lot.total }} total slots</div>
+  <div class="info-chip">✅ {{ available_count(lot_id) }} free</div>
+</div>
+
+<div id="lot-map"></div>
+
+<div class="section-title">Slot Map</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Available – click to book</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Occupied</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Maintenance</div>
+</div>
+
+<div class="slot-grid">
+  {% for slot_num, status in lot.slots.items() %}
+    {% if status == 'available' %}
+      <a href="{{ url_for('book_slot', lot_id=lot_id, slot_num=slot_num) }}" class="slot slot-available">
+        <span class="slot-icon">🚗</span>
+        <span>S-{{ slot_num }}</span>
+      </a>
+    {% elif status == 'occupied' %}
+      <div class="slot slot-occupied">
+        <span class="slot-icon">🚙</span>
+        <span>S-{{ slot_num }}</span>
+      </div>
+    {% else %}
+      <div class="slot slot-maintenance">
+        <span class="slot-icon">🔧</span>
+        <span>S-{{ slot_num }}</span>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map = L.map('lot-map').setView([{{ lot.lat }}, {{ lot.lng }}], 16);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+}).addTo(map);
+
+const icon = L.divIcon({
+  className:'',
+  html:`<div style="background:#00d4ff;color:#000;font-weight:800;padding:6px 12px;border-radius:8px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.5)">🅿 {{ lot.name }}</div>`,
+  iconAnchor:[60,15]
+});
+L.marker([{{ lot.lat }}, {{ lot.lng }}], {icon}).addTo(map);
+
+// Navigation button
+const navBtn = L.control({position:'topright'});
+navBtn.onAdd = () => {
+  const d = L.DomUtil.create('div');
+  d.innerHTML = `<a href="https://www.google.com/maps/dir/?api=1&destination={{ lot.lat }},{{ lot.lng }}" target="_blank" style="display:inline-block;padding:8px 14px;background:#00d4ff;color:#000;font-weight:700;font-size:13px;border-radius:8px;text-decoration:none;">🧭 Navigate</a>`;
+  return d;
+};
+navBtn.addTo(map);
+</script>
+{% endblock %}

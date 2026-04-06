@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Book Slot {{ slot_num }} – SmartPark{% endblock %}
+{% block content %}
+<style>
+.book-wrap { max-width:480px; margin:2rem auto; }
+.book-header { text-align:center; margin-bottom:2rem; }
+.book-header .slot-badge { width:80px;height:80px;border-radius:16px;border:3px solid var(--green);background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem; }
+.book-header h1 { font-size:1.5rem; font-weight:700; }
+.book-header p { color:var(--muted); margin-top:.25rem; font-size:.9rem; }
+.price-preview { background:rgba(0,212,255,.07); border:1px solid rgba(0,212,255,.25); border-radius:10px; padding:1rem 1.25rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; }
+.price-preview .label { color:var(--muted); font-size:.875rem; }
+.price-preview .value { font-size:1.4rem; font-weight:700; color:var(--accent); font-family:'JetBrains Mono',monospace; }
+</style>
+
+<div class="book-wrap">
+  <div class="book-header">
+    <div class="slot-badge">🚗</div>
+    <h1>Book Slot S-{{ slot_num }}</h1>
+    <p>{{ lot.name }} &nbsp;·&nbsp; ₹{{ lot.rate }}/hr</p>
+  </div>
+
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Vehicle Number</label>
+        <input type="text" name="vehicle" placeholder="TN 01 AB 1234" required maxlength="15">
+      </div>
+      <div class="form-group">
+        <label>Duration (hours)</label>
+        <select name="hours" id="hrs-select" onchange="updatePrice(this.value)">
+          {% for h in range(1, 13) %}
+          <option value="{{ h }}">{{ h }} hour{% if h>1 %}s{% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="price-preview">
+        <span class="label">Estimated Total</span>
+        <span class="value" id="price-val">₹{{ lot.rate }}</span>
+      </div>
+
+      <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;padding:.75rem;">✅ Confirm Booking</button>
+    </form>
+  </div>
+
+  <div style="margin-top:1rem;text-align:center;">
+    <a href="{{ url_for('lot_detail', lot_id=lot_id) }}" class="btn btn-outline btn-sm">← Back to Slot Map</a>
+  </div>
+</div>
+
+<script>
+const rate = {{ lot.rate }};
+function updatePrice(h) {
+  document.getElementById('price-val').textContent = '₹' + (rate * parseInt(h));
+}
+</script>
+{% endblock %}

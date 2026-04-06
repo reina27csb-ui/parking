@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}SmartPark{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --card: #1a2235;
+  --border: #1e2d45;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* NAV */
+nav {
+  background: rgba(17,24,39,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; position: sticky; top: 0; z-index: 100;
+}
+.nav-brand { font-size: 1.25rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.nav-brand span { color: var(--text); }
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 500; transition: color .2s; }
+.nav-links a:hover { color: var(--accent); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: .5rem 1.2rem; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: all .2s; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #00b8d9; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover { background: #059669; }
+.btn-sm { padding: .35rem .8rem; font-size: .8rem; }
+
+/* MAIN */
+main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+/* ALERTS */
+.alert { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .9rem; }
+.alert-success { background: rgba(16,185,129,.15); border: 1px solid var(--green); color: var(--green); }
+.alert-error { background: rgba(239,68,68,.15); border: 1px solid var(--red); color: var(--red); }
+.alert-info { background: rgba(0,212,255,.1); border: 1px solid var(--accent); color: var(--accent); }
+
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+
+/* SLOT GRID */
+.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: .75rem; }
+.slot {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 10px; border: 2px solid; cursor: pointer; text-decoration: none;
+  font-size: .8rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  transition: all .2s; gap: 4px;
+}
+.slot-available { border-color: var(--green); background: rgba(16,185,129,.1); color: var(--green); }
+.slot-available:hover { background: rgba(16,185,129,.25); transform: translateY(-2px); }
+.slot-occupied { border-color: var(--red); background: rgba(239,68,68,.1); color: var(--red); cursor: not-allowed; }
+.slot-maintenance { border-color: var(--yellow); background: rgba(245,158,11,.1); color: var(--yellow); cursor: not-allowed; }
+.slot-icon { font-size: 1.4rem; }
+
+/* BADGE */
+.badge { display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.badge-green { background: rgba(16,185,129,.15); color: var(--green); }
+.badge-red { background: rgba(239,68,68,.15); color: var(--red); }
+.badge-yellow { background: rgba(245,158,11,.15); color: var(--yellow); }
+.badge-blue { background: rgba(0,212,255,.15); color: var(--accent); }
+
+/* FORM */
+.form-group { margin-bottom: 1.25rem; }
+label { display: block; font-size: .85rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; }
+input, select {
+  width: 100%; padding: .65rem 1rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: .9rem; font-family: inherit; outline: none;
+  transition: border-color .2s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: .75rem 1rem; font-size: .8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+td { padding: .85rem 1rem; border-bottom: 1px solid rgba(30,45,69,.5); font-size: .9rem; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); }
+
+/* STAT CARD */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.stat-label { font-size: .8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.stat-value { font-size: 2rem; font-weight: 700; margin-top: .25rem; font-family: 'JetBrains Mono', monospace; }
+.stat-value.accent { color: var(--accent); }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.yellow { color: var(--yellow); }
+
+.page-header { margin-bottom: 2rem; }
+.page-header h1 { font-size: 1.75rem; font-weight: 700; }
+.page-header p { color: var(--muted); margin-top: .25rem; }
+
+@media(max-width:600px){
+  main { padding: 1rem; }
+  nav { padding: 0 1rem; }
+  .nav-links { gap: .75rem; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="{{ url_for('index') }}" class="nav-brand">🅿 <span>Smart<b style="color:var(--accent)">Park</b></span></a>
+  <div class="nav-links">
+    <a href="{{ url_for('lots') }}">Lots</a>
+    {% if session.get('username') %}
+      {% if session.username == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+      {% else %}
+        <a href="{{ url_for('dashboard') }}">My Bookings</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Register</a>
+    {% endif %}
+  </div>
+</nav>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'success' if cat=='success' else ('error' if cat=='error' else 'info') }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

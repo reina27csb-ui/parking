@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed – SmartPark{% endblock %}
+{% block content %}
+<style>
+.confirm-wrap { max-width:520px; margin:2rem auto; text-align:center; }
+.checkmark { font-size:4rem; animation: pop .4s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+.confirm-wrap h1 { font-size:1.75rem; font-weight:700; margin:.75rem 0 .25rem; }
+.confirm-wrap p { color:var(--muted); }
+.booking-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin:1.5rem 0; text-align:left; }
+.booking-row { display:flex; justify-content:space-between; padding:.6rem 0; border-bottom:1px solid rgba(30,45,69,.6); font-size:.9rem; }
+.booking-row:last-child { border-bottom:none; }
+.booking-row .key { color:var(--muted); }
+.booking-row .val { font-weight:600; font-family:'JetBrains Mono',monospace; }
+.actions { display:flex; gap:.75rem; justify-content:center; flex-wrap:wrap; }
+</style>
+
+<div class="confirm-wrap">
+  <div class="checkmark">✅</div>
+  <h1>Booking Confirmed!</h1>
+  <p>Your slot has been reserved successfully.</p>
+
+  <div class="booking-card">
+    <div class="booking-row"><span class="key">Booking ID</span><span class="val" style="color:var(--accent)">{{ booking.id }}</span></div>
+    <div class="booking-row"><span class="key">Lot</span><span class="val">{{ booking.lot_name }}</span></div>
+    <div class="booking-row"><span class="key">Slot</span><span class="val">S-{{ booking.slot }}</span></div>
+    <div class="booking-row"><span class="key">Vehicle</span><span class="val">{{ booking.vehicle }}</span></div>
+    <div class="booking-row"><span class="key">Duration</span><span class="val">{{ booking.hours }} hr{% if booking.hours>1 %}s{% endif %}</span></div>
+    <div class="booking-row"><span class="key">Amount</span><span class="val" style="color:var(--green)">₹{{ booking.amount }}</span></div>
+    <div class="booking-row"><span class="key">Booked At</span><span class="val">{{ booking.booked_at }}</span></div>
+  </div>
+
+  <div class="actions">
+    <a href="https://www.google.com/maps/dir/?api=1&destination={{ lot.lat }},{{ lot.lng }}" target="_blank" class="btn btn-primary">🧭 Navigate to Lot</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">My Bookings</a>
+  </div>
+</div>
+{% endblock %}

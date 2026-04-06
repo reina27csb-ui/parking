@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}My Bookings – SmartPark{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>👋 Hello, {{ session.name }}!</h1>
+  <p>Manage your parking bookings below.</p>
+</div>
+
+<a href="{{ url_for('lots') }}" class="btn btn-primary" style="margin-bottom:1.5rem;">+ New Booking</a>
+
+{% if bookings %}
+<div class="card">
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Lot</th><th>Slot</th><th>Vehicle</th><th>Duration</th><th>Amount</th><th>Status</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings | sort(attribute='id', reverse=True) %}
+      <tr>
+        <td><code style="color:var(--accent);font-size:.8rem;">{{ b.id }}</code></td>
+        <td>{{ b.lot_name }}</td>
+        <td><code>S-{{ b.slot }}</code></td>
+        <td>{{ b.vehicle }}</td>
+        <td>{{ b.hours }}h</td>
+        <td style="color:var(--green);font-weight:600;">₹{{ b.amount }}</td>
+        <td>
+          {% if b.status == 'confirmed' %}
+            <span class="badge badge-green">Confirmed</span>
+          {% else %}
+            <span class="badge badge-red">Cancelled</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if b.status == 'confirmed' %}
+            <a href="{{ url_for('cancel_booking', bid=b.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this booking?')">Cancel</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;">
+  <p style="font-size:3rem;">🅿</p>
+  <p style="color:var(--muted);margin-top:.5rem;">No bookings yet. Find a parking lot and book your first slot!</p>
+</div>
+{% endif %}
+{% endblock %}
